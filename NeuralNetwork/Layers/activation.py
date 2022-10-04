@@ -1,6 +1,6 @@
 import numpy as np
 
-from Base import *
+from .layer import *
 
 
 class Activation(Layer):

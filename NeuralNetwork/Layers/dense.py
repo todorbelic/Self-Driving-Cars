@@ -1,5 +1,6 @@
-from Base import *
+
 import numpy as np
+from .layer import Layer
 import random
 
 
