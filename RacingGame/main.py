@@ -1,7 +1,4 @@
-import random
-
 import pygame
-import numpy as np
 import math
 from utils import scale_image, blit_rotate_center
 
@@ -50,8 +47,9 @@ class Car:
 
     def draw(self, win):
         self.rotated_image, topLeft, center = blit_rotate_center(win, self.img, (self.x, self.y), self.angle)
-        for angle in (-60, -30, 0, 30, 60):
-            self.radar(angle, center, win)
+        #for angle in (-60, -30, 0, 30, 60):
+            #self.radar(angle, center, win)
+        self.collision(center)
 
     def radar(self, angle, center, win):
         length = 0
@@ -67,6 +65,23 @@ class Car:
                 break
         pygame.draw.line(win, (255, 255, 255, 255), center, (x, y), 1)
         pygame.draw.circle(win, (255, 0, 0, 0), (x, y), 3)
+
+    def collision(self, center):
+        length = 12
+        collision_point_right = [int(center[0] - math.sin(math.radians(self.angle + 18)) * length),
+                                 int(center[1] - math.cos(math.radians(self.angle + 18)) * length)]
+        collision_point_left = [int(center[0] - math.sin(math.radians(self.angle - 18)) * length),
+                                int(center[1] - math.cos(math.radians(self.angle - 18)) * length)]
+
+        # Die on Collision
+        if TRACK.get_at(collision_point_right) == pygame.Color(0, 0, 0, 255) \
+                or TRACK.get_at(collision_point_left) == pygame.Color(0, 0, 0, 255):
+            self.stop()
+
+        # Draw Collision Points
+        pygame.draw.circle(WIN, (0, 255, 255, 0), collision_point_right, 2)
+        pygame.draw.circle(WIN, (0, 255, 255, 0), collision_point_left, 2)
+
 
     def reduce_speed(self):
         self.vel = max(0, int(self.vel - self.acceleration / 2))
