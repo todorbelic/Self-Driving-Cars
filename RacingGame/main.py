@@ -1,12 +1,13 @@
+import random
+
 import pygame
-import time
+import numpy as np
 import math
 from utils import scale_image, blit_rotate_center
 
 GRASS = scale_image(pygame.image.load("images/grass.jpg"), 2.5)
 TRACK = scale_image(pygame.image.load("images/track1.png"), 1.5)
-FINISH = pygame.image.load("images/finish.png")
-CAR = scale_image(pygame.image.load("images/green-car.png"), 0.3)
+CAR = scale_image(pygame.image.load("images/purple-car.png"), 0.3)
 
 WIDTH, HEIGHT = TRACK.get_width(), TRACK.get_height()
 
@@ -26,11 +27,11 @@ class Car:
         self.max_velocity = max_velocity
         self.vel = 0
         self.rotation_velocity = rotation_velocity
-        self.angle = 0
+        self.angle = -90
         self.x, self.y = self.START_POS
-        self.xr, self.yr = self.START_POS
         self.acceleration = 0.1
         self.rotated_image = None
+        self.alive = True
 
     def rotate(self, left=False, right=False):
         if left:
@@ -47,13 +48,12 @@ class Car:
         self.x -= math.sin(radians) * self.vel
         self.y -= math.cos(radians) * self.vel
 
-
     def draw(self, win):
         self.rotated_image, topLeft, center = blit_rotate_center(win, self.img, (self.x, self.y), self.angle)
         for angle in (-60, -30, 0, 30, 60):
-            self.radar(angle, center)
+            self.radar(angle, center, win)
 
-    def radar(self, angle, center):
+    def radar(self, angle, center, win):
         length = 0
         x = int(center[0])
         y = int(center[1])
@@ -61,12 +61,15 @@ class Car:
             length += 1
             x = int(center[0] - math.sin(math.radians(self.angle + angle)) * length)
             y = int(center[1] - math.cos(math.radians(self.angle + angle)) * length)
-
-        pygame.draw.line(WIN, (255, 255, 255, 255), center, (x, y), 1)
-        pygame.draw.circle(WIN, (255, 0, 0, 0), (x, y), 3)
+            try:
+                TRACK.get_at((x, y))
+            except IndexError:
+                break
+        pygame.draw.line(win, (255, 255, 255, 255), center, (x, y), 1)
+        pygame.draw.circle(win, (255, 0, 0, 0), (x, y), 3)
 
     def reduce_speed(self):
-        self.vel = 0
+        self.vel = max(0, int(self.vel - self.acceleration / 2))
         self.move()
 
     def stop(self):
@@ -74,38 +77,49 @@ class Car:
         self.move()
 
 
-def draw(win, imgs, car):
+def draw(win, imgs, cars):
     for img, pos in imgs:
         win.blit(img, pos)
-    car.draw(win)
+    for car in cars:
+        car.draw(win)
     pygame.display.update()
 
 
 run = True
 clock = pygame.time.Clock()
 images = [(GRASS, (0, 0)), (TRACK, (0, 0))]
-
-car = Car(3, 3)
-
+cars = []
+#car = Car(3, 3)
+for i in range(1):
+    cars.append(Car(3, 3))
+i = 0
 while run:
-    clock.tick(FPS)  # 60 fps
+    clock.tick(60)  # 60 fps
 
-    draw(WIN, images, car)
 
+    draw(WIN, images, cars)
     for event in pygame.event.get():  # all events in pygame
         if event.type == pygame.QUIT:
             run = False
             break
     keys = pygame.key.get_pressed()
     moved = False
-    if keys[pygame.K_a]:
-        car.rotate(left=True)
-    if keys[pygame.K_d]:
-        car.rotate(right=True)
-    if keys[pygame.K_w]:
-        moved = True
-        car.move_forward()
-    if not moved:
-        car.reduce_speed()
+    for car in cars:
+        """if random.random() < 0.1:
+            car.rotate(left=True)
+        elif 0.3 < random.random() < 0.4:
+            car.rotate(right=True)
+
+        car.move_forward()"""
+
+        if keys[pygame.K_a]:
+            car.rotate(left=True)
+        if keys[pygame.K_d]:
+            car.rotate(right=True)
+        if keys[pygame.K_w]:
+            moved = True
+            car.move_forward()
+        if not moved:
+            car.reduce_speed()
 
 pygame.quit()
