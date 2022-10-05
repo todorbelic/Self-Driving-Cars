@@ -5,20 +5,20 @@ import numpy as np
 import pygame
 import math
 from utils import scale_image, blit_rotate_center
-from NeuralNetwork.Layers.dense import *
-from NeuralNetwork.Layers.tanh import *
+
+from neuralNetwork.layers.dense import Dense
+from neuralNetwork.layers.tanh import Tanh
 
 GRASS = scale_image(pygame.image.load("images/grass.jpg"), 2.5)
 TRACK = scale_image(pygame.image.load("images/track1.png"), 1.5)
 CAR = scale_image(pygame.image.load("images/purple-car.png"), 0.3)
 
 WIDTH, HEIGHT = TRACK.get_width(), TRACK.get_height()
-
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Racing game")
 
 FPS = 60
-
+POPULATION = 30
 
 class Car:
     IMG = CAR
@@ -87,25 +87,19 @@ class Car:
 
         # Die on Collision
         if TRACK.get_at(collision_point_right) == pygame.Color(0, 0, 0, 255) \
-                or TRACK.get_at(collision_point_left) == pygame.Color(0, 0, 0, 255):
+                or TRACK.get_at(collision_point_left) == pygame.Color(139, 195, 74, 255):
             self.alive = False
 
         # Draw Collision Points
         pygame.draw.circle(WIN, (0, 255, 255, 0), collision_point_right, 2)
         pygame.draw.circle(WIN, (0, 255, 255, 0), collision_point_left, 2)
 
-    def reduce_speed(self):
-        self.vel = max(0, int(self.vel - self.acceleration / 2))
-        self.move()
 
     def mutate(self, mutation_rate):
         for layer in self.neural_network:
             if isinstance(layer, Dense):
                 layer.mutate(mutation_rate)
 
-    def stop(self):
-        self.vel = 0
-        self.move()
 
 
 def draw(win, imgs, cars):
@@ -120,7 +114,7 @@ def draw(win, imgs, cars):
 def next_generation(cars):
     normalize_fitness(cars)
     new_cars = []
-    for i in range(10):
+    for i in range(POPULATION):
         new_cars.append(pick_one(cars))
     cars.clear()
     cars = new_cars
@@ -152,8 +146,8 @@ run = True
 clock = pygame.time.Clock()
 images = [(TRACK, (0, 0))]
 cars = []
-# car = Car(3, 3)
-for i in range(10):
+
+for i in range(POPULATION):
     network = [
         Dense(5, 6),
         Tanh(),
@@ -163,10 +157,10 @@ for i in range(10):
     cars.append(Car(3, 3, network))
 i = 0
 while run:
-    clock.tick(60)  # 60 fps
+    clock.tick(FPS)  # 60 fps
 
     draw(WIN, images, cars)
-    for event in pygame.event.get():  # all events in pygame
+    for event in pygame.event.get():  # svi eventovi
         if event.type == pygame.QUIT:
             run = False
             break
@@ -195,7 +189,7 @@ while run:
             car.move_forward()
         if not moved:
             car.reduce_speed()"""
-        if i == 10:
+        if i == POPULATION:
             cars = next_generation(cars)
 
 pygame.quit()
