@@ -20,6 +20,7 @@ pygame.display.set_caption("Racing game")
 FPS = 60
 POPULATION = 30
 
+
 class Car:
     IMG = CAR
     START_POS = (915, 120)
@@ -85,21 +86,14 @@ class Car:
         collision_point_left = [int(center[0] - math.sin(math.radians(self.angle - 18)) * length),
                                 int(center[1] - math.cos(math.radians(self.angle - 18)) * length)]
 
-        # Die on Collision
         if TRACK.get_at(collision_point_right) == pygame.Color(0, 0, 0, 255) \
                 or TRACK.get_at(collision_point_left) == pygame.Color(139, 195, 74, 255):
             self.alive = False
-
-        # Draw Collision Points
-        pygame.draw.circle(WIN, (0, 255, 255, 0), collision_point_right, 2)
-        pygame.draw.circle(WIN, (0, 255, 255, 0), collision_point_left, 2)
-
 
     def mutate(self, mutation_rate):
         for layer in self.neural_network:
             if isinstance(layer, Dense):
                 layer.mutate(mutation_rate)
-
 
 
 def draw(win, imgs, cars):
