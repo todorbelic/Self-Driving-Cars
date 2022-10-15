@@ -17,8 +17,8 @@ WIDTH, HEIGHT = TRACK.get_width(), TRACK.get_height()
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Racing game")
 
-FPS = 60
-POPULATION = 30
+FPS = 30
+POPULATION = 20
 
 
 class Car:
@@ -131,7 +131,7 @@ def pick_one(cars):
         index += 1
     index -= 1
     car = cars[index]
-    child = Car(3, 3, copy.deepcopy(car.neural_network))
+    child = Car(4, 4, copy.deepcopy(car.neural_network))
     child.mutate(0.1)
     return child
 
@@ -148,7 +148,7 @@ for i in range(POPULATION):
         Dense(6, 3),
         Tanh()
     ]
-    cars.append(Car(3, 3, network))
+    cars.append(Car(4, 4, network))
 i = 0
 while run:
     clock.tick(FPS)  # 60 fps
